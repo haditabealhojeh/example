@@ -1,0 +1,80 @@
+<\?xml version="1.0" encoding="UTF-8"?>
+<httpcollector id="config-id">
+  <workDir>./output</workDir>
+  <startURLs stayOnDomain="true" stayOnPort="true" stayOnProtocol="true">
+    <url>https://www.paziresh24.com/blog/9857/hc-toothache-reasons-treatment/</url>
+  </startURLs>
+
+  <urlNormalizer class="GenericURLNormalizer">
+    <normalizations>
+        removeFragment, lowerCaseSchemeHost, upperCaseEscapeSequence,
+        decodeUnreservedCharacters, removeDefaultPort,
+        encodeNonURICharacters
+    </normalizations>
+  </urlNormalizer>
+
+  <!--Handles interval between each page download-->
+  <delay default="3000" />
+
+  <numThreads>2</numThreads>
+
+  <maxDepth>0</maxDepth>
+
+  <maxDocuments>-1</maxDocuments>
+
+  <orphansStrategy>PROCESS</orphansStrategy>
+
+  <!-- Handle robots.txt files. -->
+  <robotsTxt ignore="false" />
+
+  <!-- Detects and processes sitemap files. -->
+  <sitemapResolver ignore="false" />
+
+  <canonicalLinkDetector ignore="false" />
+
+  <referenceFilters>
+    <filter class="RegexReferenceFilter" onMatch="exclude">.*/login/.*</filter>
+  </referenceFilters>
+
+  <importer>
+
+    <preParseHandlers>
+      <!-- Remove navigation elements from HTML pages. -->
+      <handler class="DOMDeleteTransformer">
+        <dom selector="header" />
+        <dom selector="footer" />
+        <dom selector="nav" />
+        <dom selector="noindex" />
+      </handler>
+	 
+    </preParseHandlers>
+ <postParseHandlers>
+
+      <!-- Rename extracted fields to what you want. -->
+      <handler class="RenameTagger">
+        <rename toField="title" onSet="replace">
+          <fieldMatcher method="csv">dc:title, og:title</fieldMatcher>
+        </rename>
+      </handler>
+
+      <!-- Make sure we are sending only one value per field. -->
+      <handler class="ForceSingleValueTagger" action="keepFirst">
+        <fieldMatcher method="csv">title</fieldMatcher>
+      </handler>
+
+      <!-- Keep only those fields and discard the rest. -->
+      <handler class="KeepOnlyTagger">
+        <fieldMatcher method="csv">title</fieldMatcher>
+      </handler>
+    </postParseHandlers>
+  </importer>
+
+  <committers>
+
+<committer class="ElasticsearchCommitter">
+		<nodes>http://127.0.0.1:9200</nodes>
+		<indexName>dental2-index</indexName>
+		
+</committer>
+  </committers>
+</crawler>
